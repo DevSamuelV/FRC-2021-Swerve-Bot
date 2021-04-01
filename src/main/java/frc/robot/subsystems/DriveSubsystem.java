@@ -99,58 +99,47 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void Drive(DoubleSupplier x, DoubleSupplier y, DoubleSupplier rot) {
-    ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(2.0, 2.0, Math.PI / 2.0, Rotation2d.fromDegrees(45.0));
+    double r = Math.sqrt((Constants.HIGHT * Constants.HIGHT) + (Constants.WIDTH * Constants.WIDTH));
 
-    // Now use this in our kinematics
-    SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(speeds);
+    double yPos = y.getAsDouble();
+    double xPos = x.getAsDouble();
 
-    var frontLeftOptimized = SwerveModuleState.optimize(frontLeft,
-        new Rotation2d(frontLeftAngle.getSelectedSensorPosition()));
+    yPos *= -1;
 
-    var frontRightOptimized = SwerveModuleState.optimize(frontRight,
-        new Rotation2d(frontRightAngle.getSelectedSensorPosition()));
+    double a = xPos - xPos * (Constants.HIGHT / r);
+    double b = xPos + xPos * (Constants.HIGHT / r);
+    double c = yPos - xPos * (Constants.WIDTH / r);
+    double d = yPos + xPos * (Constants.WIDTH / r);
 
-    var backLeftOptimized = SwerveModuleState.optimize(backLeft,
-        new Rotation2d(frontLeftAngle.getSelectedSensorPosition()));
+    double backLeftSpeed = Math.sqrt((a * a) + (b * b));
+    double backRightSpeed = Math.sqrt((a * a) + (c * c));
+    double frontRightSpeed = Math.sqrt((b * b) + (d * d));
+    double frontLeftSpeed = Math.sqrt((b * b) + (c * c));
 
-    var backRightOptimized = SwerveModuleState.optimize(backRight,
-        new Rotation2d(frontLeftAngle.getSelectedSensorPosition()));
+    double backLeftAngle = Math.atan2(a, d) * 180 / Math.PI;
+    double backRightAngle = Math.atan2(a, c) * 180 / Math.PI;
+    double frontLeftAngle = Math.atan2(b, d) * 180 / Math.PI;
+    double frontRightAngle = Math.atan2(b, c) * 180 / Math.PI;
 
-    var frontLeftState = new SwerveModuleState(GetMotorPos(frontLeftMotion),
-        Rotation2d.fromDegrees(canCoderFrontLeft.getAbsolutePosition()));
+    this.frontRightMotion.set(frontRightSpeed);
+    this.frontLeftMotion.set(frontLeftSpeed);
+    this.backLeftMotion.set(backLeftSpeed);
+    this.backRightMotion.set(backRightSpeed);
 
-    var frontRightState = new SwerveModuleState(GetMotorPos(frontRightMotion),
-        Rotation2d.fromDegrees(canCoderFrontRight.getAbsolutePosition()));
+    this.frontRightAngle.set(frontRightAngle);
+    this.frontLeftAngle.set(frontLeftAngle);
+    this.backLeftAngle.set(backLeftAngle);
+    this.backRightAngle.set(backRightAngle);
 
-    var backLeftState = new SwerveModuleState(GetMotorPos(backLeftMotion),
-        Rotation2d.fromDegrees(canCoderBackLeft.getAbsolutePosition()));
+    SmartDashboard.putNumber("Back Left Speed", backLeftSpeed);
+    SmartDashboard.putNumber("Back Right Speed", backRightSpeed);
+    SmartDashboard.putNumber("Front Right Speed", frontRightSpeed);
+    SmartDashboard.putNumber("Front Left Speed", frontLeftSpeed);
 
-    var backRightState = new SwerveModuleState(GetMotorPos(backRightMotion),
-        Rotation2d.fromDegrees(canCoderBackRight.getAbsolutePosition()));
-
-    // Convert to chassis speeds
-    ChassisSpeeds chassisSpeeds = m_kinematics.toChassisSpeeds(frontLeftState, frontRightState, backLeftState,
-        backRightState);
-
-    // Getting individual speeds
-    double forward = chassisSpeeds.vxMetersPerSecond;
-    double sideways = chassisSpeeds.vyMetersPerSecond;
-    double angular = chassisSpeeds.omegaRadiansPerSecond;
-
-    System.out.println("forward " + forward);
-    System.out.println("sideways " + sideways);
-    System.out.println("angular " + angular);
-
-    System.out.println("back-left position: " + canCoderBackLeft.getPosition());
-    System.out.println("front-left position: " + canCoderFrontLeft.getPosition());
-    System.out.println("front-right position: " + canCoderFrontRight.getPosition());
-    System.out.println("back-right position: " + canCoderBackRight.getPosition());
-
-    System.out.println("back-left position Absolute: " + canCoderBackLeft.getAbsolutePosition());
-    System.out.println("front-left position Absolute: " + canCoderFrontLeft.getAbsolutePosition());
-    System.out.println("front-right position Absolute: " + canCoderFrontRight.getAbsolutePosition());
-    System.out.println("back-right position Absolute: " + canCoderBackRight.getAbsolutePosition());
-
+    SmartDashboard.putNumber("Back Left Angle", backLeftAngle);
+    SmartDashboard.putNumber("Back Right Angle", backRightAngle);
+    SmartDashboard.putNumber("Front Left Angle", frontLeftAngle);
+    SmartDashboard.putNumber("Front Right Angle", frontRightAngle);
   }
 
   @Override

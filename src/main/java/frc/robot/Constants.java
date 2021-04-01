@@ -35,4 +35,8 @@ public final class Constants {
   public static final double motorSpeed = 0.5;
   public static final double WIDTH = 0;
   public static final double HIGHT = 1;
+
+  public static final double kI = 0;
+  public static final double kP = 1;
+  public static final double kB = 0;
 }
